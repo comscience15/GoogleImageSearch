@@ -37,6 +37,13 @@ public class ImageFilter extends Activity {
 		setResult(RESULT_OK, i);
 		finish();
 	}
+	
+	public void onBtnCancel(View v){
+		sColorFilter.setSelection(0);
+		sImageSize.setSelection(0);
+		sImageType.setSelection(0);
+		etSiteFilter.setText("");
+	}
 
 //	private void addImgSize() {
 //		String value = imgSizeSpinner.getSelectedItem().toString();
