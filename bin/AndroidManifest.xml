@@ -33,7 +33,7 @@
                 android:value="com.comscience15.googleimagesearch.activities.SearchActivity" />
         </activity>
         <activity
-            android:name="com.comscience15.googleimagesearch.activities.ImageFilter"
+            android:name=".activities.ImageFilter"
             android:label="@string/title_activity_image_filter"
             android:parentActivityName=".activities.SearchActivity" >
             <meta-data

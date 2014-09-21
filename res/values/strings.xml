@@ -9,5 +9,40 @@
     <string name="image_title_label">Image Title</string>
     <string name="title_activity_image_display">Image Full Screen</string>
     <string name="title_activity_image_filter">Image Search Filter</string>
-
+    <string name="imgSize_prompt">Image Size</string>
+    <string-array name = "imgSize_arrays">
+        <item>small</item>
+        <item>medium</item>
+        <item>large</item>
+        <item>xlarge</item>
+    </string-array>
+        <string name="tvFilterTitle">Advanced Image Filter</string>
+        <string name="tvImgSize">Image Size</string>
+        <string name="tvColorFilter">Color Filter</string>
+        <string name="tvImageType">Image Type</string>
+        <string name="tvSiteFilter">Site Filter</string>
+    <string name="imgColor_prompt">Image Color</string>
+    <string-array name = "imgColor_arrays">
+        <item>black</item>
+        <item>blue</item>
+        <item>brown</item>
+        <item>gray</item>
+        <item>green</item>
+        <item>orange</item>
+        <item>pink</item>
+        <item>purple</item>
+        <item>red</item>
+        <item>teal</item>
+        <item>white</item>
+        <item>yellow</item>
+    </string-array>
+    <string name="imgType_prompt">Image Type</string>
+    <string-array name = "imgType_arrays">
+        <item>face</item>
+        <item>photo</item>
+        <item>clipart</item>
+        <item>lineart</item>
+    </string-array>
+        <string name="btnSave">Save</string>
+        <string name="btnCancel">Cancel</string>
 </resources>

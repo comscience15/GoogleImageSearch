@@ -3,9 +3,10 @@
     tools:context="com.comscience15.googleimagesearch.SearchActivity" >
 
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:id="@+id/miImgFilter"
+        android:title="Image Filter"
+        android:icon="@drawable/ic_image_filter"
+        android:onClick="onImgFilter"
+        android:showAsAction="always" />
 
 </menu>

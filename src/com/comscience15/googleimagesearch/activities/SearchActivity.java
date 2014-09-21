@@ -29,15 +29,19 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class SearchActivity extends Activity implements OnScrollListener{
-	public static String search = "Search Text";
-	public static String imgSize = "Image Size";
-	public static String colorFilter = "Color Filter";
-	public static String imgType = "Image Type";
-	public static String urlFilter = "URL Filter";
+	public static String searchText = null;
+	public static String fullUrl = null;
+	public static String filterUrl = null;
+	public static String query = null;
+	public static String imgSize = null;
+	public static String colorFilter = null;
+	public static String imgType = null;
+	public static String siteFilter = null;
 	private EditText etQuery;
 	private GridView gvResults;
 	private ArrayList<ImageResult> imgResults;
 	private ImageResultsAdapter imgResultsAdapter;
+	private final int REQUEST_CODE = 1;
 	
 	private int visibleThreshold = 5;
 	private int currentPage = 0;
@@ -66,6 +70,8 @@ public class SearchActivity extends Activity implements OnScrollListener{
 	// responseDate ==> results ==> [x] ==> tbUrl
 	private void declareVariables(){
 		etQuery = (EditText) findViewById(R.id.etQuery);
+		
+		
 		gvResults = (GridView) findViewById(R.id.gvResults);
 		gvResults.setGravity(Gravity.CENTER);
 
@@ -77,7 +83,8 @@ public class SearchActivity extends Activity implements OnScrollListener{
 				// Launch image display activity
 				// creating an intent --- need to be more specific which is SearchActivity class instead of using anonymous class (this) 
 				Intent i = new Intent(SearchActivity.this, ImageDisplayActivity.class);
-				
+
+				Toast.makeText(SearchActivity.this, "Intent is opened\n" + i, Toast.LENGTH_LONG).show();
 				// get image result to display
 				ImageResult result = imgResults.get(position);
 				
@@ -95,12 +102,14 @@ public class SearchActivity extends Activity implements OnScrollListener{
 	
 	//fired whenever button is pressed (android:onClick property)
 	public void onImageSearch(View v) {
-		String query = etQuery.getText().toString();
-		Toast.makeText(this, "Search for " + query, Toast.LENGTH_LONG).show();
-		
+		query = etQuery.getText().toString();
+		fullUrl = null;
+		fullUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + filterUrl;
+
+		Toast.makeText(this, "Query for " + query, Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "Searching for " + fullUrl, Toast.LENGTH_LONG).show();
 		AsyncHttpClient client = new AsyncHttpClient();
-		String searchURL = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8";
-		client.get(searchURL, new JsonHttpResponseHandler(){
+		client.get(fullUrl, new JsonHttpResponseHandler(){
 			// JSON data is objects(dictionary) not array
 			@Override
 			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -122,23 +131,35 @@ public class SearchActivity extends Activity implements OnScrollListener{
 		});
 	}
 	
+	public void onImgFilter(MenuItem mi) {
+		Toast.makeText(this, "Menu item clicked!", Toast.LENGTH_SHORT).show();
+		// Create an intent
+		Intent i = new Intent(SearchActivity.this, ImageFilter.class);
+
+//		// Execute intent
+		startActivityForResult(i, REQUEST_CODE);
+//		startActivity(i);
+	}
+	
+	@Override
+	protected void onActivityResult(int request, int result, Intent data){
+		if (result == RESULT_OK && request == REQUEST_CODE) {
+			query = etQuery.getText().toString();
+			colorFilter = "&imgc="+data.getExtras().getString("Color Filter");
+			imgSize = "&imgsz="+data.getExtras().getString("Image Size");
+			imgType = "&imgtype="+data.getExtras().getString("Image Type");
+			siteFilter = "&as_sitesearch="+data.getExtras().getString("Site Filter");
+			searchText = query + "&rsz=8";
+			filterUrl = searchText + colorFilter + imgSize + imgType + siteFilter;
+			Toast.makeText(this, "Filter URL " + filterUrl, Toast.LENGTH_LONG).show();
+		}
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.search, menu);
 		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 	
 	@Override
