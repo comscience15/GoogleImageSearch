@@ -28,7 +28,7 @@ import com.comscience15.googleimagesearch.models.ImageResult;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
-public class SearchActivity extends Activity implements OnScrollListener{
+public class SearchActivity extends Activity{
 	public static String searchText = null;
 	public static String fullUrl = null;
 	public static String filterUrl = null;
@@ -42,12 +42,7 @@ public class SearchActivity extends Activity implements OnScrollListener{
 	private ArrayList<ImageResult> imgResults;
 	private ImageResultsAdapter imgResultsAdapter;
 	private final int REQUEST_CODE = 1;
-	
-	private int visibleThreshold = 5;
-	private int currentPage = 0;
-	private int previousTotalItemCount = 0;
-	private boolean loading = true;
-	private int startingPageIndex = 0;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +70,47 @@ public class SearchActivity extends Activity implements OnScrollListener{
 		gvResults = (GridView) findViewById(R.id.gvResults);
 		gvResults.setGravity(Gravity.CENTER);
 
+		gvResults.setOnScrollListener(new OnScrollListener() {
+			private int visibleThreshold = 5;
+			private int currentPage = 0;
+			private int previousTotalItemCount = 0;
+			private boolean loading = true;
+			private int startingPageIndex = 0;
+
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				// TODO Auto-generated method stub
+				
+			}
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+				if (totalItemCount < previousTotalItemCount) {
+					this.currentPage = this.startingPageIndex;
+					this.previousTotalItemCount = totalItemCount;
+					if (totalItemCount == 0) {
+						this.loading = true;
+					}
+				}
+				
+				if (loading && (totalItemCount > previousTotalItemCount)) {
+					loading = false;
+					previousTotalItemCount = totalItemCount;
+					currentPage++;
+				}
+				
+				if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+					onLoadMore(currentPage + 1, totalItemCount);
+					loading = true;
+				}
+			}
+			
+			private void onLoadMore(int page, int totalItemCount) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
+		
 		// add setOnItemClickListener for clicking and open a new intent to display full screen image and title
 		gvResults.setOnItemClickListener(new OnItemClickListener() {
 
@@ -132,7 +168,7 @@ public class SearchActivity extends Activity implements OnScrollListener{
 	}
 	
 	public void onImgFilter(MenuItem mi) {
-		Toast.makeText(this, "Menu item clicked!", Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, "Image filter is opening!", Toast.LENGTH_SHORT).show();
 		// Create an intent
 		Intent i = new Intent(SearchActivity.this, ImageFilter.class);
 
@@ -160,37 +196,5 @@ public class SearchActivity extends Activity implements OnScrollListener{
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.search, menu);
 		return true;
-	}
-	
-	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		if (totalItemCount < previousTotalItemCount) {
-			this.currentPage = this.startingPageIndex;
-			this.previousTotalItemCount = totalItemCount;
-			if (totalItemCount == 0) {
-				this.loading = true;
-			}
-		}
-		
-		if (loading && (totalItemCount > previousTotalItemCount)) {
-			loading = false;
-			previousTotalItemCount = totalItemCount;
-			currentPage++;
-		}
-		
-		if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-			onLoadMore(currentPage + 1, totalItemCount);
-			loading = true;
-		}
-	}
-	
-	private void onLoadMore(int page, int totalItemCount) {
-		// TODO Auto-generated method stub
-		
 	}
 }
