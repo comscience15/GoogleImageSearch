@@ -31,19 +31,19 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class SearchActivity extends Activity{
-	public static String searchText = null;
-	public static String fullUrl = null;
-	public static String filterUrl = null;
-	public static String query = null;
-	public static String imgSize = null;
-	public static String colorFilter = null;
-	public static String imgType = null;
-	public static String siteFilter = null;
+	private String searchText = null;
+	private String fullUrl = null;
+	private String filterUrl = null;
+	private String query = null;
+	private String imgSize = null;
+	private String colorFilter = null;
+	private String imgType = null;
+	private String siteFilter = null;
 	private EditText etQuery;
 	private GridView gvResults;
 	private ArrayList<ImageResult> imgResults;
 	private ImageResultsAdapter imgResultsAdapter;
-	private final int REQUEST_CODE = 1;
+	private static final int REQUEST_CODE = 1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,38 +82,13 @@ public class SearchActivity extends Activity{
 			@Override
 			public void onScrollStateChanged(AbsListView view, int scrollState) {
 				Log.i("SCROLL", "onScrollStateChanged is called " + scrollState);
-//				if (scrollState == 1) {
-//					Log.i("SCROLL", "Scrolling is starting.");
-//					
-//					query = etQuery.getText().toString();
-//					fullUrl = null;
-//					fullUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8" +  filterUrl;
-//
-//					AsyncHttpClient client = new AsyncHttpClient();
-//					client.get(fullUrl, new JsonHttpResponseHandler(){
-//						// JSON data is objects(dictionary) not array
-//						@Override
-//						public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-//							Log.d("DEBUG - SUCCESS", response.toString());
-//							JSONArray imgResultsJSON = null;
-//							try {
-//								//start parsing data
-//								// grap array list for results
-//								imgResultsJSON = response.optJSONObject("responseData").getJSONArray("results");
-//								imgResults.clear(); // clear the existing images from array (in cases where it's a new search);
-//								// when make adapter, it does modify underlying data
-//								// using adapter instead of ArrayList so it will auto ".notify" adapter 
-//								imgResultsAdapter.addAll(ImageResult.fromJSONArray(imgResultsJSON));
-//							} catch (Exception e) {
-//								e.printStackTrace();
-//							}
-//							Log.i("INFO", imgResults.toString());
-//						}
-//					});
-//				}
 			}
+			
 			@Override
 			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+				Log.i("DEBUG", "firstVisibleItem = " + firstVisibleItem);
+				Log.i("DEBUG", "visibleItemCount = " + visibleItemCount);
+				Log.i("DEBUG", "totalItemCount = " + totalItemCount);
 				if (totalItemCount < previousTotalItemCount) {
 					this.currentPage = this.startingPageIndex;
 					this.previousTotalItemCount = totalItemCount;
@@ -127,15 +102,17 @@ public class SearchActivity extends Activity{
 					previousTotalItemCount = totalItemCount;
 					currentPage++;
 				}
-				
-				if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+				int unseenItemCount = totalItemCount - visibleItemCount;
+				if (!loading && unseenItemCount <= (firstVisibleItem + visibleThreshold)) {
 					onLoadMore(currentPage + 1, totalItemCount);
 					loading = true;
 				}
 			}
 			
 			private void onLoadMore(int page, int totalItemCount) {
-				
+				Log.i("DEBUG", "Fetching page = " + page);
+				Log.i("DEBUG", "Fetching totalItemCount = " + totalItemCount);
+				fetchImage(page * 8, query);
 			}
 			
 		});
@@ -167,17 +144,22 @@ public class SearchActivity extends Activity{
 	//fired whenever button is pressed (android:onClick property)
 	public void onImageSearch(View v) {
 		query = etQuery.getText().toString();
-		fullUrl = null;
-		if (filterUrl == null) {
-			fullUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8";
-		}else {
-			fullUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + filterUrl;
+		if (filterUrl != null) {
+			query += filterUrl;
 		}
 
+		imgResults.clear(); // clear the existing images from array (in cases where it's a new search);
+		fetchImage(0, query);
+	}
+	
+	private void fetchImage(int start, String query) {
+		query += "&rsz=8";
+		String url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&start=" + start;
+
 		Toast.makeText(this, "Query for " + query, Toast.LENGTH_LONG).show();
-		Toast.makeText(this, "Searching for " + fullUrl, Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "Searching for " + url, Toast.LENGTH_LONG).show();
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get(fullUrl, new JsonHttpResponseHandler(){
+		client.get(url, new JsonHttpResponseHandler(){
 			// JSON data is objects(dictionary) not array
 			@Override
 			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -185,9 +167,8 @@ public class SearchActivity extends Activity{
 				JSONArray imgResultsJSON = null;
 				try {
 					//start parsing data
-					// grap array list for results
+					// grab array list for results
 					imgResultsJSON = response.optJSONObject("responseData").getJSONArray("results");
-					imgResults.clear(); // clear the existing images from array (in cases where it's a new search);
 					// when make adapter, it does modify underlying data
 					// using adapter instead of ArrayList so it will auto ".notify" adapter 
 					imgResultsAdapter.addAll(ImageResult.fromJSONArray(imgResultsJSON));
