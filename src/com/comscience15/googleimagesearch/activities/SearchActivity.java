@@ -33,7 +33,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 public class SearchActivity extends Activity{
 	private String searchText = null;
 	private String fullUrl = null;
-	private String filterUrl = null;
+	private String filterUrl = "";
 	private String query = null;
 	private String imgSize = null;
 	private String colorFilter = null;
@@ -112,7 +112,7 @@ public class SearchActivity extends Activity{
 			private void onLoadMore(int page, int totalItemCount) {
 				Log.i("DEBUG", "Fetching page = " + page);
 				Log.i("DEBUG", "Fetching totalItemCount = " + totalItemCount);
-				fetchImage(page * 8, query);
+				fetchImage(page * 8, query, filterUrl);
 			}
 			
 		});
@@ -144,17 +144,20 @@ public class SearchActivity extends Activity{
 	//fired whenever button is pressed (android:onClick property)
 	public void onImageSearch(View v) {
 		query = etQuery.getText().toString();
-		if (filterUrl != null) {
-			query += filterUrl;
+		fullUrl = null;
+		if (filterUrl == null) {
+			fullUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8";
+		}else {
+			fullUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + filterUrl;
 		}
 
 		imgResults.clear(); // clear the existing images from array (in cases where it's a new search);
-		fetchImage(0, query);
+		fetchImage(0, query, filterUrl);
 	}
 	
-	private void fetchImage(int start, String query) {
+	private void fetchImage(int start, String query, String filterUrl) {
 		query += "&rsz=8";
-		String url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&start=" + start;
+		String url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&start=" + start + filterUrl;
 
 		Toast.makeText(this, "Query for " + query, Toast.LENGTH_LONG).show();
 		Toast.makeText(this, "Searching for " + url, Toast.LENGTH_LONG).show();
