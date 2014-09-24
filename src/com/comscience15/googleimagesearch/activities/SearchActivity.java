@@ -9,6 +9,8 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -31,14 +33,8 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class SearchActivity extends Activity{
-	private String searchText = null;
-	private String fullUrl = null;
 	private String filterUrl = "";
 	private String query = null;
-	private String imgSize = null;
-	private String colorFilter = null;
-	private String imgType = null;
-	private String siteFilter = null;
 	private EditText etQuery;
 	private GridView gvResults;
 	private ArrayList<ImageResult> imgResults;
@@ -144,7 +140,7 @@ public class SearchActivity extends Activity{
 	//fired whenever button is pressed (android:onClick property)
 	public void onImageSearch(View v) {
 		query = etQuery.getText().toString();
-		fullUrl = null;
+		String fullUrl = null;
 		if (filterUrl == null) {
 			fullUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8";
 		}else {
@@ -152,12 +148,19 @@ public class SearchActivity extends Activity{
 		}
 
 		imgResults.clear(); // clear the existing images from array (in cases where it's a new search);
-		fetchImage(0, query, filterUrl);
+		Boolean ntwStatus = isNetworkAvailable();
+		if (ntwStatus){
+			fetchImage(0, query, filterUrl);
+		}else
+			Log.i("NETWORK STATE","You are disconnected!!");
 	}
 	
 	private void fetchImage(int start, String query, String filterUrl) {
 		query += "&rsz=8";
-		String url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&start=" + start + filterUrl;
+		if (filterUrl != null) {
+			query += filterUrl;
+		}
+		String url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&start=" + start;
 
 		Toast.makeText(this, "Query for " + query, Toast.LENGTH_LONG).show();
 		Toast.makeText(this, "Searching for " + url, Toast.LENGTH_LONG).show();
@@ -193,16 +196,23 @@ public class SearchActivity extends Activity{
 //		startActivity(i);
 	}
 	
+	//checking Network state
+	private Boolean isNetworkAvailable() {
+	    ConnectivityManager connectivityManager  = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    Log.i("NETWORK", "Network info is " + activeNetworkInfo);
+	    Log.i("NETWORK2", "Network state is " + activeNetworkInfo.isConnectedOrConnecting());
+	    return activeNetworkInfo.isConnectedOrConnecting();
+	}
+	
 	@Override
 	protected void onActivityResult(int request, int result, Intent data){
 		if (result == RESULT_OK && request == REQUEST_CODE) {
-			query = etQuery.getText().toString();
-			colorFilter = "&imgc="+data.getExtras().getString("Color Filter");
-			imgSize = "&imgsz="+data.getExtras().getString("Image Size");
-			imgType = "&imgtype="+data.getExtras().getString("Image Type");
-			siteFilter = "&as_sitesearch="+data.getExtras().getString("Site Filter");
-			searchText = query + "&rsz=8";
-			filterUrl = searchText + colorFilter + imgSize + imgType + siteFilter;
+			String colorFilter = "&imgc="+data.getExtras().getString("Color Filter");
+			String imgSize = "&imgsz="+data.getExtras().getString("Image Size");
+			String imgType = "&imgtype="+data.getExtras().getString("Image Type");
+			String siteFilter = "&as_sitesearch="+data.getExtras().getString("Site Filter");
+			filterUrl = colorFilter + imgSize + imgType + siteFilter;
 			Toast.makeText(this, "Filter URL " + filterUrl, Toast.LENGTH_LONG).show();
 		}
 	}
